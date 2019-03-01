@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.wdf.sap.corp/i826414/quotearchive/models"
+	"github.com/navionguy/cloudquotes/models"
 )
 
 // exportArchive loads the entire database of quotes and then converts them into
