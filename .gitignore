@@ -13,3 +13,7 @@ cloudquotes
 .grifter/
 .env
 migrations/*.sql
+fetch
+srcls
+setup
+go.sum
