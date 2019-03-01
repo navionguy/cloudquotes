@@ -12,3 +12,4 @@ cloudquotes
 .vscode/
 .grifter/
 .env
+migrations/*.sql
