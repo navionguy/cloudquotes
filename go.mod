@@ -12,6 +12,7 @@ require (
 	github.com/gobuffalo/pop v4.9.9+incompatible
 	github.com/gobuffalo/uuid v2.0.5+incompatible
 	github.com/gobuffalo/validate v2.0.3+incompatible
+	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/grift v1.0.5
 	github.com/pkg/errors v0.8.1
 	github.com/unrolled/secure v1.0.0
