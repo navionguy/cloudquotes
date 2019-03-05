@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.wdf.sap.corp/i826414/quotearchive/models"
+	"github.com/navionguy/cloudquotes/models"
 )
 
 func (as *ActionSuite) Test_Conversations_Show() {

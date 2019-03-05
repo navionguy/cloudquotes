@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// UsersNew brings up the new user screen
 func UsersNew(c buffalo.Context) error {
 	u := models.User{}
 	c.Set("user", u)

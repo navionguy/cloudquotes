@@ -17,7 +17,7 @@ import (
 // application is being run. Default is "development".
 var ENV = envy.Get("GO_ENV", "development")
 var app *buffalo.App
-var T *i18n.Translator
+var t *i18n.Translator
 
 // App is where all routes and middleware for buffalo
 // should be defined. This is the nerve center of your
@@ -84,10 +84,10 @@ func App() *buffalo.App {
 // for more information: https://gobuffalo.io/en/docs/localization
 func translations() buffalo.MiddlewareFunc {
 	var err error
-	if T, err = i18n.New(packr.NewBox("../locales"), "en-US"); err != nil {
+	if t, err = i18n.New(packr.NewBox("../locales"), "en-US"); err != nil {
 		app.Stop(err)
 	}
-	return T.Middleware()
+	return t.Middleware()
 }
 
 // forceSSL will return a middleware that will redirect an incoming request
