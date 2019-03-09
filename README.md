@@ -6,7 +6,8 @@ people often say things that, if you have a twisted way of thinking about them, 
 of the quotes just had to be shared with co-workers.  So, I started posting them the on wall outside my
 office.  That was 1997.
 
-    **When they say, "All you have to do is...", you're screwed.**
+> When they say, "All you have to do is...",
+> you're screwed.
 
 Now, some 22 years later, the quote wall has captured over 2300 quotes and is still going.  About six
 years ago, I created a Windows program in C# that allowed me to enter the quotes into a MSSQL database.
