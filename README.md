@@ -6,11 +6,11 @@ people often say things that, if you have a twisted way of thinking about them, 
 of the quotes just had to be shared with co-workers.  So, I started posting them the on wall outside my
 office.  That was 1997.
 
-> When they say, "All you have to do is...",
-> you're screwed.
+> When they say, "All you have to do is...", you're screwed. -- Beth Smith
 
-Now, some 22 years later, the quote wall has captured over 2300 quotes and is still going.  About six
-years ago, I created a Windows program in C# that allowed me to enter the quotes into a MSSQL database.
+Now, some 22 years later, the quote wall has captured over 2300 quotes and is still going.
+
+About six years ago, I created a Windows program in C# that allowed me to enter the quotes into a MSSQL database.
 This lead to a small linux service written in Go that would randomly display quotes from the database
 in your browser.  My friends could now check out the latest quotes from their desk.  As long as they
 were in the building.
