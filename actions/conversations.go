@@ -176,20 +176,20 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 // Edit renders a edit form for a Conversation. This function is
 // mapped to the path GET /conversations/{conversation_id}/edit
 func (v ConversationsResource) Edit(c buffalo.Context) error {
-	// Get the DB connection from the context
-	tx, ok := c.Value("tx").(*pop.Connection)
-	if !ok {
-		return errors.WithStack(errors.New("no transaction found"))
-	}
 
-	// Allocate an empty Conversation
-	conversation := &models.Conversation{}
+	cv, err := v.loadConversation(c)
 
-	if err := tx.Find(conversation, c.Param("conversation_id")); err != nil {
+	if err != nil {
 		return c.Error(404, err)
 	}
 
-	return c.Render(200, r.Auto(c, conversation))
+	err = v.loadForm(cv, &cv.Quotes[0], c)
+
+	if err != nil {
+		return c.Error(404, err)
+	}
+
+	return c.Render(200, r.Auto(c, cv))
 }
 
 // Update changes a Conversation in the DB. This function is mapped to
