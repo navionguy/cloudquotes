@@ -12,7 +12,7 @@ This lead to a small linux service written in Go that would randomly display quo
 in your browser.  My friends could now check out the latest quotes from their desk.  As long as they
 were in the building.
 
-Last year I discovered [Buffalo][https://github.com/gobuffalo] *The Go Web Eco-System* and started
+Last year I discovered https://github.com/gobuffalo *The Go Web Eco-System* and started
 playing with it in my spare time.
 
 This repository is actually the second iteration of the archive using Buffalo, but the first built
