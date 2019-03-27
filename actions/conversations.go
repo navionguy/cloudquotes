@@ -201,37 +201,54 @@ func (v ConversationsResource) Update(c buffalo.Context) error {
 		return errors.WithStack(errors.New("no transaction found"))
 	}
 
+	req := c.Request()
+	if err := req.ParseForm(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	quote, option, err := bindToForm(c)
+
+	if err != nil {
+		return err
+	}
+
 	// Allocate an empty Conversation
 	conversation := &models.Conversation{}
 
 	if err := tx.Find(conversation, c.Param("conversation_id")); err != nil {
 		return c.Error(404, err)
 	}
+	var verrs *validate.Errors
 
-	// Bind Conversation to the html form elements
-	if err := c.Bind(conversation); err != nil {
-		return errors.WithStack(err)
+	switch *option {
+	case "addAuthor":
+		return v.addAuthor(quote, c)
+
+	case "save":
+		conversation, quote, verrs, err = v.saveConversation(quote)
+
+		if err != nil {
+			return err
+		}
+
+		if verrs != nil {
+			err = v.loadForm(conversation, quote, c)
+
+			if err != nil {
+				return errors.WithStack(err)
+			}
+			// set the verification errors into the context and send back the quote
+			c.Set("errors", verrs)
+
+			return c.Render(422, r.HTML("conversations/new.html"))
+		}
+		c.Flash().Add("success", "Conversation was created successfully")
+
+		//return c.Redirect(302, fmt.Sprintf("/conversations//%%7B%s%%7D/", conversation.ID.String()))
+		return c.Render(201, r.Auto(c, conversation))
 	}
 
-	verrs, err := tx.ValidateAndUpdate(conversation)
-	if err != nil {
-		return errors.WithStack(err)
-	}
-
-	if verrs.HasAny() {
-		// Make the errors available inside the html template
-		c.Set("errors", verrs)
-
-		// Render again the edit.html template that the user can
-		// correct the input.
-		return c.Render(422, r.Auto(c, conversation))
-	}
-
-	// If there are no errors set a success message
-	c.Flash().Add("success", "Conversation was updated successfully")
-
-	// and redirect to the conversations index page
-	return c.Render(200, r.Auto(c, conversation))
+	return err
 }
 
 // Destroy deletes a Conversation from the DB. This function is mapped

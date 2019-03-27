@@ -67,10 +67,9 @@ func App() *buffalo.App {
 		app.POST("/signin", AuthCreate)
 		app.DELETE("/signout", AuthDestroy)
 		cv := &ConversationsResource{}
-		app.GET("/conversations/export/", cv.Export)
-		app.POST("/conversations/", cv.Create)
-		app.GET("/conversations", cv.List)
-		app.Resource("/conversations", ConversationsResource{})
+		app.GET("/conversations/export/", cv.Export) // this is becoming useless and should probably go away
+		app.Resource("/conversations", cv)
+		app.Resource("/authors", AuthorsResource{})
 		app.Middleware.Skip(Authorize, HomeHandler, UsersNew, UsersCreate, AuthNew, AuthCreate)
 		app.ServeFiles("/", assetsBox) // serve files from the public directory
 	}
