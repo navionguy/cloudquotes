@@ -48,6 +48,19 @@ create_table("permissions") {
 	t.ForeignKey("user_id", {"users": ["id"]}, {"on_delete": "restrict deferrable initially deferred"})
 }
 
+exec("echo create view author_counts")
+sql ("
+/* returns an author record but adds a count of the number of quotes for the author */
+CREATE OR REPLACE VIEW author_counts AS
+        SELECT a.id AS id,
+        a.name AS name,
+        a.created_at AS created_at,
+        a.updated_at AS updated_at,
+        COUNT(a.id) AS count
+        FROM (authors a
+                JOIN quotes q ON ((a.id = q.author_id)))
+        GROUP BY a.id;
+")
 
 exec("echo create function pick_from_range")
 sql ("
