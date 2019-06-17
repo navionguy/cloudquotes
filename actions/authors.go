@@ -45,6 +45,7 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 // Create default implementation.
 func (v AuthorsResource) Create(c buffalo.Context) error {
 	s := c.Session()
+
 	tcv := s.Get("conversation")
 	escv, ok := tcv.(string)
 
@@ -55,6 +56,20 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 		_ = json.Unmarshal([]byte(scv), cv)
 
 		fmt.Println(cv)
+		fmt.Println("take that")
 	}
-	return c.Render(200, r.HTML("authors/put.html"))
+
+	auth := &models.Author{}
+
+	// Bind quote to the html form elements
+	if err := c.Bind(auth); err != nil {
+		return errors.WithStack(err)
+	}
+
+	fmt.Printf("author:%s\n", auth.Name)
+	if nil == auth.FindByName() {
+		fmt.Println("found him")
+	}
+
+	return c.Render(200, r.HTML("conversations/new"))
 }

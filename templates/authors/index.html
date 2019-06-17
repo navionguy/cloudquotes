@@ -79,9 +79,9 @@
       %>  
 
       <tr>
-      <td width="140px"><%= conversation.OccurredOn.Format("Jan _2, 2006") %></td>
+      <td width="140px">author.Name</td>
         <td width="500px">
-            <a href="<%= conversationsPath() %>/%7B<%= conversation.ID.String() %>%7D" data-toggle="tooltip" title="View"><%= phrase %></a><br><%= author %>
+            <a href="<%= authorsPath() %>/%7B<%= author.ID.String() %>%7D" data-toggle="tooltip" title="View"><%= phrase %></a><br><%= author %>
         </td>
         <td width="300px">
           <div class="pull-right">
@@ -95,9 +95,6 @@
     <% } %>
   </tbody>
 </table>
-<div class="pull-right">
-  <a href="<%= conversationsPath() %>export/" data-toggle="tooltip" title="Export to Json" class="btn btn-info"><img src="<%= assetPath("images/json.png") %>"/></a>
-</div>
 <div class="text-center">
   <%= paginator(pagination) %>
 </div>

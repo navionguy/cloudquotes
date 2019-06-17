@@ -1,7 +1,9 @@
 <html>
 <script>
-    function myFunction(x) {
-        document.getElementById(x).style.background = "yellow";
+    function nextQuote() {
+        seq = document.getElementById("quote-sequence");
+        newValue = parseInt(seq.value) + 1;
+        seq.value = newValue;
         
     }
 </script>
@@ -15,6 +17,7 @@
         <table width="100%">
             <%= f.HiddenTag("sequence", {value: quote.Sequence}) %>
             <%= f.HiddenTag("option", {value:"none"}) %>
+            <p id="demo"></p>
             <col width="25%">
             <col width="45%">
             <col width="30%">
@@ -47,6 +50,7 @@
         
         <input type="image" class="btn btn-info" data-toggle="tooltip" title="Save" onfocus="option.value='save'" src="<%= assetPath("images/Save.png") %>">
         <input type="image" class="btn btn-primary" data-toggle="tooltip" title="Add Reply" onfocus="option.value='reply'" src="<%= assetPath("images/Reply.png") %>">
+        <img class="btn btn-primary" src = "<%= assetPath("images/Reply.png") %>" onclick="nextQuote()">
         <a href="<%= conversationsPath() %>"class="btn btn-warning" data-confirm="Are you sure?"  data-toggle="tooltip" title="Cancel" >
             <img src="<%= assetPath("images/Cancel.png") %>">
         </a>

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/gobuffalo/pop"
@@ -17,7 +18,7 @@ type Author struct {
 	ID        uuid.UUID `json:"id" db:"id"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
-	Name      string    `json:"name" db:"name"`
+	Name      string    `json:"name" db:"name" form:"SpeakerName"`
 }
 
 // String is not required by pop and may be deleted
@@ -78,6 +79,28 @@ func (a *Author) FindByID() error {
 
 	if len(authRecs) == 0 {
 		return errors.New("author ID not found in db")
+	}
+
+	*a = authRecs[0]
+
+	return nil
+}
+
+// FindByName check for an author by name
+func (a *Author) FindByName() error {
+	// Break the passed name down into pieces
+	parts := strings.Split(a.Name, " ")
+
+	authRecs := []Author{}
+	query := DB.Where(fmt.Sprintf("name ILIKE '%%%s%%' AND name ILIKE '%%%s%%'", parts[0], parts[len(parts)-1]))
+	err := query.All(&authRecs)
+
+	if err != nil {
+		return err
+	}
+
+	if len(authRecs) == 0 {
+		return errors.New("author name not found in db")
 	}
 
 	*a = authRecs[0]

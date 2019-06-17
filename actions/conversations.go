@@ -79,7 +79,12 @@ func (v ConversationsResource) Show(c buffalo.Context) error {
 		return c.Error(404, err)
 	}
 
-	fontSize := fmt.Sprintf("%s", fontScale[len(conversation.Quotes)])
+	var fontSize string
+	if len(conversation.Quotes) > 1 {
+		fontSize = fmt.Sprintf("%s", fontScale[len(conversation.Quotes)])
+	} else if len(conversation.Quotes[0].Phrase) > 100 {
+		fontSize = fmt.Sprintf("%s", fontScale[2])
+	}
 
 	c.Set("fontsize", fontSize)
 	return c.Render(200, r.Auto(c, conversation))
@@ -509,7 +514,7 @@ func (v ConversationsResource) addAuthor(quote *models.Quote, c buffalo.Context)
 	s.Save()
 
 	author := &models.Author{
-		Name: "",
+		Name: "test",
 	}
 
 	c.Set("author", author)
