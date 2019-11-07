@@ -16,8 +16,9 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/markbates/grift v1.0.6
 	github.com/pkg/errors v0.8.1
-	github.com/spf13/afero v1.2.1 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/unrolled/secure v1.0.0
 	golang.org/x/crypto v0.0.0-20190621222207-cc06ce4a13d4
 )
+
+go 1.13
