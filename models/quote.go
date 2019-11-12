@@ -56,7 +56,7 @@ func (q *Quote) Validate(tx *pop.Connection) (*validate.Errors, error) {
 		&validators.IntIsGreaterThan{Field: q.Sequence, Name: "sequence", Compared: -1, Message: "sequence must be >= 0"},
 
 		&validators.StringIsPresent{Field: q.Phrase, Name: "Phrase"},
-		&validators.StringLengthInRange{Field: q.Phrase, Name: "Phrase", Min: 0, Max: 255, Message: "length must be <255"},
+		&validators.StringLengthInRange{Field: q.Phrase, Name: "Phrase", Min: 1, Max: 255, Message: "length must be <255"},
 
 		&validators.FuncValidator{
 			Field:   q.AuthorID.String(),

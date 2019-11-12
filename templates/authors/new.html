@@ -13,12 +13,13 @@
     <%= form_for(author, {action: authorsPath(), method: "POST"}) { %>
 
         <table width="100%">
+            <p id="demo"></p>
             <col width="25%">
             <col width="45%">
             <col width="30%">
             <tr>
                 <td colspan="1">
-                    <%= f.InputTag("SpeakerName", {label: t("speakers_name"), value: author.Name }) %>
+                    <%= f.InputTag("name", {label: t("speakers_name"), value: author.Name }) %>
                 </td>
             </tr>
         </table>

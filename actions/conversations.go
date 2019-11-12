@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -140,7 +141,7 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 
 	quote, option, err := bindToForm(c)
 
-	if err != nil {
+	if (err != nil) && 0 == strings.Compare(*option, "save") {
 		return err
 	}
 
@@ -158,7 +159,7 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 			return err
 		}
 
-		if verrs != nil {
+		if verrs.HasAny() {
 			err = v.loadForm(conversation, quote, c)
 
 			if err != nil {
@@ -236,7 +237,7 @@ func (v ConversationsResource) Update(c buffalo.Context) error {
 			return err
 		}
 
-		if verrs != nil {
+		if verrs.HasAny() {
 			err = v.loadForm(conversation, quote, c)
 
 			if err != nil {
@@ -441,7 +442,7 @@ func bindToForm(c buffalo.Context) (*models.Quote, *string, error) {
 	err = quote.Author.FindByID()
 
 	if err != nil {
-		return nil, nil, errors.WithStack(err)
+		return quote, &option, errors.WithStack(err)
 	}
 
 	// get out the annotation value
@@ -513,9 +514,7 @@ func (v ConversationsResource) addAuthor(quote *models.Quote, c buffalo.Context)
 	s.Set("test", "this is a test")
 	s.Save()
 
-	author := &models.Author{
-		Name: "test",
-	}
+	author := &models.Author{}
 
 	c.Set("author", author)
 	c.Set("gotoPage", "new")

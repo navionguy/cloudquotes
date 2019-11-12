@@ -41,6 +41,7 @@ func (a Authors) String() string {
 func (a *Author) Validate(tx *pop.Connection) (*validate.Errors, error) {
 	return validate.Validate(
 		&validators.StringIsPresent{Field: a.Name, Name: "Name"},
+		&validators.StringLengthInRange{Field: a.Name, Name: "Name", Min: 1, Max: 255, Message: "length must be 1-255"},
 	), nil
 }
 
@@ -88,6 +89,11 @@ func (a *Author) FindByID() error {
 
 // FindByName check for an author by name
 func (a *Author) FindByName() error {
+	// name can't be empty
+	if len(a.Name) == 0 {
+		return errors.New("author name can't be blank")
+	}
+
 	// Break the passed name down into pieces
 	parts := strings.Split(a.Name, " ")
 
@@ -106,4 +112,12 @@ func (a *Author) FindByName() error {
 	*a = authRecs[0]
 
 	return nil
+}
+
+// Create adds a new speaker to the authors table
+func (a *Author) Create() (*validate.Errors, error) {
+
+	verrs, err := DB.ValidateAndCreate(a)
+
+	return verrs, err
 }

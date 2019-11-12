@@ -55,21 +55,43 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 
 		_ = json.Unmarshal([]byte(scv), cv)
 
+		fmt.Println("here it is")
 		fmt.Println(cv)
 		fmt.Println("take that")
 	}
 
-	auth := &models.Author{}
+	speaker := &models.Author{}
 
 	// Bind quote to the html form elements
-	if err := c.Bind(auth); err != nil {
+	if err := c.Bind(speaker); err != nil {
 		return errors.WithStack(err)
 	}
 
-	fmt.Printf("author:%s\n", auth.Name)
-	if nil == auth.FindByName() {
-		fmt.Println("found him")
+	tx, ok := c.Value("tx").(*pop.Connection)
+
+	if !ok {
+		return errors.WithStack(errors.New("no transaction found"))
 	}
+
+	if nil != speaker.FindByName() {
+		verrs, err := tx.ValidateAndCreate(speaker)
+
+		if err != nil {
+			return err
+		}
+
+		if verrs.HasAny() {
+			c.Set("author", speaker)
+			c.Set("gotoPage", "new")
+
+			// set the verification errors into the context and send back the author
+			c.Set("errors", verrs)
+
+			return c.Render(422, r.Auto(c, speaker))
+		}
+	}
+
+	// put the conversation back into the form
 
 	return c.Render(200, r.HTML("conversations/new"))
 }

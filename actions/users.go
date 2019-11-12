@@ -34,9 +34,9 @@ func UsersCreate(c buffalo.Context) error {
 	}
 
 	c.Session().Set("current_user_id", u.ID)
-	c.Flash().Add("success", "Welcome to Buffalo!")
+	c.Flash().Add("success", "Welcome to the Quote Archive in the Cloud!")
 
-	return c.Redirect(302, "/")
+	return c.Redirect(302, "/conversations")
 }
 
 // SetCurrentUser attempts to find a user based on the current_user_id
