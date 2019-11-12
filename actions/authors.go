@@ -48,10 +48,10 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 
 	tcv := s.Get("conversation")
 	escv, ok := tcv.(string)
+	cv := &models.Conversation{}
 
 	if ok {
 		scv, _ := url.QueryUnescape(escv)
-		cv := &models.Conversation{}
 
 		_ = json.Unmarshal([]byte(scv), cv)
 
@@ -66,6 +66,8 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 	if err := c.Bind(speaker); err != nil {
 		return errors.WithStack(err)
 	}
+
+	fmt.Printf("new speaker %s\n", speaker.Name)
 
 	tx, ok := c.Value("tx").(*pop.Connection)
 
@@ -89,9 +91,36 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 
 			return c.Render(422, r.Auto(c, speaker))
 		}
+		c.Flash().Add("success", "Speaker created successfully!")
 	}
 
 	// put the conversation back into the form
+	quote := models.Quote{}
+	authors := []models.Author{}
+	annotation := models.Annotation{}
+
+	annotation.Note = ""
+
+	if quote.Annotation != nil {
+		annotation.Note = quote.Annotation.Note
+	}
+
+	// Retrieve all Authors from the DB
+	if err := tx.Order("name").All(&authors); err != nil {
+		return errors.WithStack(err)
+	}
+
+	quote = cv.Quotes[0]
+
+	if quote.Annotation != nil {
+		annotation.Note = quote.Annotation.Note
+	}
+
+	c.Set("conversation", cv)
+	c.Set("quote", quote)
+	c.Set("authors", authors)
+	c.Set("annotation", annotation)
+	c.Set("option", "save")
 
 	return c.Render(200, r.HTML("conversations/new"))
 }
