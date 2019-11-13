@@ -1,15 +1,27 @@
 <html>
 <script>
+    function prevQuote() {
+        seq = document.getElementById("quote-sequence");
+        newValue = parseInt(seq.value) - 1;
+        if (newValue >= 0) {
+            seq.value = newValue;
+        }
+        if (newValue == 0) {
+            prevButton.src = "<%= assetPath("images/GrayPrev.png") %>"
+        }
+    }
     function nextQuote() {
         seq = document.getElementById("quote-sequence");
         newValue = parseInt(seq.value) + 1;
         seq.value = newValue;
-        
+
+        prev = document.getElementById("prevButton");
+        prevButton.src = "<%= assetPath("images/Prev.png") %>"
     }
 </script>
 
 <div class="page-header">
-    <h1>Record a New Quote</h1>
+    <h1><%= t("record_conversation") %></h1>
 </div>
 
     <%= form_for(quote, {action: conversationsPath(), method: "POST"}) { %>
@@ -32,7 +44,7 @@
                     
                 </td>
                 <td valign="middle">
-                    <input type="image" class="btn btn-info" data-toggle="tooltip" title="Add Speaker" onfocus="option.value='addAuthor'" src="<%= assetPath("images/AddItem.png") %>">
+                    <input type="image" class="btn btn-info" data-toggle="tooltip" title= "<%= t("add_speaker_tip") %>" onfocus="option.value='addAuthor'" src="<%= assetPath("images/AddItem.png") %>">
                 </td>
                 <td colspan="1">
                     <%= f.InputTag("SaidOn", {class: "datepicker", label: t("said_on_date"), value: quote.SaidOn.Format("01/02/2006") }) %>
@@ -48,10 +60,12 @@
             </tr>
         </table>
         
-        <input type="image" class="btn btn-info" data-toggle="tooltip" title="Save" onfocus="option.value='save'" src="<%= assetPath("images/Save.png") %>">
-        <input type="image" class="btn btn-primary" data-toggle="tooltip" title="Add Reply" onfocus="option.value='reply'" src="<%= assetPath("images/Reply.png") %>">
-        <img class="btn btn-primary" src = "<%= assetPath("images/Reply.png") %>" onclick="nextQuote()">
-        <a href="<%= conversationsPath() %>"class="btn btn-warning" data-confirm="Are you sure?"  data-toggle="tooltip" title="Cancel" >
+        <input type="image" class="btn btn-info" data-toggle="tooltip" title= "<%= t("save_label") %>" onfocus="option.value='save'" src="<%= assetPath("images/Save.png") %>">
+
+        <img id="prevButton" class="btn btn-success" src = "<%= assetPath("images/GrayPrev.png") %>" title = "<%= t("prev_comment_tip") %>" onclick="prevQuote()">
+        <img class="btn btn-primary" src = "<%= assetPath("images/Reply.png") %>" title = "<%= t("next_comment_tip") %>" onclick="nextQuote()">
+
+        <a href="<%= conversationsPath() %>"class="btn btn-warning" data-confirm= "<%= t("confirm_prompt") %>"  data-toggle="tooltip" title= "<%= t("cancel_label") %>" >
             <img src="<%= assetPath("images/Cancel.png") %>">
         </a>
     <% } %>

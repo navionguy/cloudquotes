@@ -27,3 +27,17 @@
   translation: "Notes"
 - id: optional
   translation: "Optional"
+- id: prev_comment_tip
+  translation: "Previous Comment"
+- id: next_comment_tip
+  translation: "Next Comment"
+- id: save_label
+  translation: "Save"
+- id: cancel_label
+  translation: "Cancel"
+- id: confirm_prompt
+  translation: "Are you sure?"
+- id: add_speaker_tip
+  translation: "Add Speaker"
+- id: record_conversation
+  translation: "Record a New Quote"
