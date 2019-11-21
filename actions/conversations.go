@@ -99,11 +99,13 @@ func (v ConversationsResource) New(c buffalo.Context) error {
 
 	var author models.Author
 
+	conversation.OccurredOn = time.Now()
 	quote.SaidOn = time.Now()
 	quote.Publish = true
 	quote.Phrase = ""
 	quote.Sequence = 0
 	quote.Author = author
+	conversation.Quotes = append(conversation.Quotes, *quote)
 
 	err := v.loadForm(conversation, quote, c)
 
@@ -408,11 +410,21 @@ func (v ConversationsResource) loadForm(conversation *models.Conversation, quote
 		return errors.WithStack(err)
 	}
 
+	cvjson, err := json.Marshal(conversation)
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	cvsjson := string(cvjson)
+	fmt.Println(cvsjson)
+
 	c.Set("conversation", conversation)
 	c.Set("quote", quote)
 	c.Set("authors", authors)
 	c.Set("annotation", annotation)
 	c.Set("option", "save")
+	c.Set("cvjson", cvsjson)
 
 	return nil
 }

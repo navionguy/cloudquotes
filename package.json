@@ -10,11 +10,13 @@
     "fstream": "^1.0.12",
     "jquery": "~3.4.0",
     "jquery-ujs": "~1.2.2",
+    "js-datepicker": "^5.2.1",
     "lodash": "^4.17.13",
     "lodash.mergewith": "^4.6.2",
     "mixin-deep": "2.0.1",
     "popper.js": "^1.14.4",
-    "set-value": "^2.0.1"
+    "set-value": "^2.0.1",
+    "tiny-date-picker": "^3.2.8"
   },
   "devDependencies": {
     "@babel/cli": "^7.0.0",

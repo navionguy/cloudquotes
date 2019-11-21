@@ -1,41 +1,124 @@
 <html>
+    <head>
+        <%= stylesheetTag("application.css") %>
+        <%= stylesheetTag("tiny-date-picker.css") %>
+    </head>
+<%= javascriptTag("application.js") %>
+<%= javascriptTag("date-range-picker.js") %>
 <script>
+var conv = null;
+var dp = null;
+
+    function setup() {
+        // first, create the conversation object based on the passed json
+        cv = document.getElementById("quote-cvj"); 
+        conv = JSON.parse(cv.value);
+
+        // start with the SaidOn date initialized to the occurredOn value
+        //document.getElementById("quote-SaidOn").value = conv.occurredon;
+
+        var TinyDatePicker = DateRangePicker.TinyDatePicker;
+        var today = new Date();
+        dp = TinyDatePicker(".datepicker", {
+            mode: 'dp-below', 
+            min: '05/05/1995',
+            max: today,
+            });
+    }
+
+    // prevQuote decrements
     function prevQuote() {
         seq = document.getElementById("quote-sequence");
         newValue = parseInt(seq.value) - 1;
         if (newValue >= 0) {
             seq.value = newValue;
+        } else {
+            seq.value = 0;
         }
+
+        // if I bumped back to the first element, disable the prev button
         if (newValue == 0) {
             prevButton.src = "<%= assetPath("images/GrayPrev.png") %>"
+            prevButton.disabled = false;
         }
     }
+
+    // nextQuote bumps the value of seq by one and enables the previous quote button
+    // then we call loadQuote() to display the selected quote.
     function nextQuote() {
+        if (saveQuote() == false) {
+            return;
+        }
         seq = document.getElementById("quote-sequence");
         newValue = parseInt(seq.value) + 1;
         seq.value = newValue;
 
-        prev = document.getElementById("prevButton");
         prevButton.src = "<%= assetPath("images/Prev.png") %>"
+        prevButton.disabled = true;
     }
+
+    // loadQuote uses the current value of seq to index into the Quotes array and
+    // copies all of his values into the form.
+    // if seq points pass the end of the array, initialize all of the fields to defaults
+    function loadQuote(seq) {
+        if (conv.Quotes.length < seq + 1) {
+            document.getElementById("quote-Phrase").value = "";
+            document.getElementById("quote-Annotation").value = "";
+            return;
+        }
+        document.getElementById("quote-Phrase").value = conv.Quotes[seq].phrase;
+        // set the SaidOn field based on the occurredon value
+        document.getElementById("quote-Annotation").value = conv.Quotes[seq].Annotation;
+
+    }
+
+    // saveQuote extracts all the form values and either saves it into the current quote,
+    // or creates a new quote and appends it to the conversation.
+    // If the Phrase or the Speaker are empty strings, it won't allow you to save
+    function saveQuote() {
+        if (0 == document.getElementById("quote-Phrase").value.length) {
+            document.getElementById("no-phrase").style.display = "block";
+            return false;
+        }
+        return true;
+    }
+
+    // clearNoPhrase hides the error for an empty phrase
+    function clearNoPhrase() {
+        document.getElementById("no-phrase").style.display = "none";
+    }
+
+    // clearNoAuthor hides the error for an empty author
+    function clearNoAuthor() {
+        document.getElementById("no-author").style.display = "none";
+    }
+
 </script>
 
 <div class="page-header">
     <h1><%= t("record_conversation") %></h1>
+    <div class="alert alert-danger" id="no-phrase" style="display: none;">
+        <strong>Error!</strong> Quotes cannot be empty.
+    </div>
+    <div class="alert alert-danger" id="no-author" style="display: none;">
+        <strong>Error!</strong> Assign speaker or create a new speaker.
+    </div>
 </div>
+
 
     <%= form_for(quote, {action: conversationsPath(), method: "POST"}) { %>
 
         <table width="100%">
             <%= f.HiddenTag("sequence", {value: quote.Sequence}) %>
             <%= f.HiddenTag("option", {value:"none"}) %>
+            <%= f.HiddenTag("cvj", {value: cvjson}) %>
             <p id="demo"></p>
             <col width="25%">
             <col width="45%">
             <col width="30%">
             <tr>
                 <td colspan="3">
-                    <%= f.TextArea("Phrase", {label: t("quote_text"), value: quote.Phrase, rows: 10 }) %>
+                    <%= f.TextArea("Phrase", {label: t("quote_text"), value: quote.Phrase, rows: 10, oninput: "clearNoPhrase()" }) %>
                 </td>
             </tr>
             <tr>
@@ -69,5 +152,7 @@
             <img src="<%= assetPath("images/Cancel.png") %>">
         </a>
     <% } %>
-      
+
+    <body onload="setup()">
+    </body>
     </html>
