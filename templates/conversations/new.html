@@ -11,8 +11,7 @@ var dp = null;
 
     function setup() {
         // first, create the conversation object based on the passed json
-        cv = document.getElementById("quote-cvj"); 
-        conv = JSON.parse(cv.value);
+        conv = JSON.parse(document.getElementById("quote-cvj").value);
 
         // start with the SaidOn date initialized to the occurredOn value
         //document.getElementById("quote-SaidOn").value = conv.occurredon;
@@ -46,12 +45,11 @@ var dp = null;
     // nextQuote bumps the value of seq by one and enables the previous quote button
     // then we call loadQuote() to display the selected quote.
     function nextQuote() {
-        if (saveQuote() == false) {
+        seq = parseInt(document.getElementById("quote-sequence").value);
+        if (saveQuote(seq) == false) {
             return;
         }
-        seq = document.getElementById("quote-sequence");
-        newValue = parseInt(seq.value) + 1;
-        seq.value = newValue;
+        document.getElementById("quote-sequence").value = seq + 1;
 
         prevButton.src = "<%= assetPath("images/Prev.png") %>"
         prevButton.disabled = true;
@@ -75,12 +73,44 @@ var dp = null;
     // saveQuote extracts all the form values and either saves it into the current quote,
     // or creates a new quote and appends it to the conversation.
     // If the Phrase or the Speaker are empty strings, it won't allow you to save
-    function saveQuote() {
-        if (0 == document.getElementById("quote-Phrase").value.length) {
+    function saveQuote(seq, chk = true) {
+        if (0 == document.getElementById("quote-Phrase").value.length && chk == true) {
             document.getElementById("no-phrase").style.display = "block";
             return false;
         }
+        if (0 == document.getElementById("quote-AuthorID").value.length && chk == true) {
+            document.getElementById("no-author").style.display = "block";
+            return false;
+        }
+        // pay for a bad decision made long ago
+        if (seq == 0) {
+            conv.publish = document.getElementById("quote-MakePublic").checked;
+            conv.occurredon = document.getElementById("quote-SaidOn").value;
+        }
+        // if there is already a quote in the conversation with this sequence number
+        // saving the quote is really easy
+        if (seq < conv.Quotes.length) {
+            conv.Quotes[seq].phrase = document.getElementById("quote-Phrase").value;
+            conv.Quotes[seq].Annotation = document.getElementById("quote-Annotation").value;
+            conv.Quotes[seq].publish = document.getElementById("quote-MakePublic").checked;
+            conv.Quotes[seq].said_on = document.getElementById("quote-SaidOn").value;
+            return true;
+        }
+
+        // I need to create a new quote and append it to the conversation
+        var nq = {
+            phrase: document.getElementById("quote-Phrase").value,
+            Annotation: document.getElementById("quote-Annotation").value,
+            publish: document.getElementById("quote-MakePublic").checked,
+            said_on: document.getElementById("quote-SaidOn").value,
+        }
+        conv.Quotes.push(nq);
         return true;
+    }
+
+    // saveConversation() takes the conversation object and marshals it into json
+    function saveConversation() {
+        document.getElementById("quote-cvj").value = JSON.stringify(conv);
     }
 
     // clearNoPhrase hides the error for an empty phrase
@@ -91,6 +121,15 @@ var dp = null;
     // clearNoAuthor hides the error for an empty author
     function clearNoAuthor() {
         document.getElementById("no-author").style.display = "none";
+    }
+
+    // addAuthor saves off the current quote, if there is one
+    // and then redirects the browser over to authors/new
+    function addAuthor() {
+        seq = parseInt(document.getElementById("quote-sequence").value);
+        saveQuote(seq, false);     // if there was no quote to save, I don't care
+        saveConversation();
+        window.location.href = window.location.hostname + "/authors/new";
     }
 
 </script>
@@ -127,7 +166,7 @@ var dp = null;
                     
                 </td>
                 <td valign="middle">
-                    <input type="image" class="btn btn-info" data-toggle="tooltip" title= "<%= t("add_speaker_tip") %>" onfocus="option.value='addAuthor'" src="<%= assetPath("images/AddItem.png") %>">
+                    <input type="image" class="btn btn-info" data-toggle="tooltip" title= "<%= t("add_speaker_tip") %>" onclick="addAuthor()" src="<%= assetPath("images/AddItem.png") %>">
                 </td>
                 <td colspan="1">
                     <%= f.InputTag("SaidOn", {class: "datepicker", label: t("said_on_date"), value: quote.SaidOn.Format("01/02/2006") }) %>
