@@ -1499,7 +1499,8 @@ var TinyDatePicker = null;
         seq = parseInt(document.getElementById("quote-sequence").value);
         saveQuote(seq, false);     // if there was no quote to save, I don't care
         saveConversation();
-        window.location.href = window.location.hostname + "/authors/new";
+        document.getElementById("quote-option").value = "addAuthor";
+        window.location.href = windows.location.hostname + "/authors/new";
     }
 
 </script>

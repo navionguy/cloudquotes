@@ -142,6 +142,7 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 	}
 
 	quote, option, err := bindToForm(c)
+	fmt.Printf("bind complete, err %s, option %s/n", err, *option)
 
 	if (err != nil) && 0 == strings.Compare(*option, "save") {
 		return err
