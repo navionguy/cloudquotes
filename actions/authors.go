@@ -46,19 +46,7 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 func (v AuthorsResource) Create(c buffalo.Context) error {
 	s := c.Session()
 
-	tcv := s.Get("conversation")
-	escv, ok := tcv.(string)
-	cv := &models.Conversation{}
-
-	if ok {
-		scv, _ := url.QueryUnescape(escv)
-
-		_ = json.Unmarshal([]byte(scv), cv)
-
-		fmt.Println("here it is")
-		fmt.Println(cv)
-		fmt.Println("take that")
-	}
+	cv, ok := v.unMarshalConversation(s)
 
 	speaker := &models.Author{}
 
@@ -121,6 +109,32 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 	c.Set("authors", authors)
 	c.Set("annotation", annotation)
 	c.Set("option", "save")
+	//c.Set("cvjson", scv)
 
 	return c.Render(200, r.HTML("conversations/new"))
+}
+
+func (v AuthorsResource) unMarshalConversation(s *buffalo.Session) (*models.Conversation, bool) {
+	cvv := s.Get("conversation")
+	cvesc, ok := cvv.(string)
+
+	// if no conversations in the session, can't unMarshal it
+	if !ok {
+		return nil, false
+	}
+
+	cvs, err := url.QueryUnescape(cvesc)
+
+	if err != nil {
+		return nil, false
+	}
+
+	cv := &models.Conversation{}
+	err = json.Unmarshal([]byte(cvs), cv)
+
+	if err != nil {
+		return nil, false
+	}
+
+	return cv, true
 }

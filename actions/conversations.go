@@ -95,19 +95,11 @@ func (v ConversationsResource) Show(c buffalo.Context) error {
 // This function is mapped to the path GET /conversations/new
 func (v ConversationsResource) New(c buffalo.Context) error {
 	conversation := &models.Conversation{}
-	quote := &models.Quote{}
-
-	var author models.Author
 
 	conversation.OccurredOn = time.Now()
-	quote.SaidOn = time.Now()
-	quote.Publish = true
-	quote.Phrase = ""
-	quote.Sequence = 0
-	quote.Author = author
-	conversation.Quotes = append(conversation.Quotes, *quote)
+	conversation.Publish = true
 
-	err := v.loadForm(conversation, quote, c)
+	err := v.loadForm(conversation, c)
 
 	if err != nil {
 		return errors.WithStack(err)
@@ -163,7 +155,7 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 		}
 
 		if verrs.HasAny() {
-			err = v.loadForm(conversation, quote, c)
+			err = v.loadForm(conversation, c)
 
 			if err != nil {
 				return errors.WithStack(err)
@@ -192,7 +184,7 @@ func (v ConversationsResource) Edit(c buffalo.Context) error {
 		return c.Error(404, err)
 	}
 
-	err = v.loadForm(cv, &cv.Quotes[0], c)
+	err = v.loadForm(cv, c)
 
 	if err != nil {
 		return c.Error(404, err)
@@ -241,7 +233,7 @@ func (v ConversationsResource) Update(c buffalo.Context) error {
 		}
 
 		if verrs.HasAny() {
-			err = v.loadForm(conversation, quote, c)
+			err = v.loadForm(conversation, c)
 
 			if err != nil {
 				return errors.WithStack(err)
@@ -390,7 +382,7 @@ func (v ConversationsResource) loadConversation(c buffalo.Context) (*models.Conv
 	return &conversation, nil
 }
 
-func (v ConversationsResource) loadForm(conversation *models.Conversation, quote *models.Quote, c buffalo.Context) error {
+func (v ConversationsResource) loadForm(conversation *models.Conversation, c buffalo.Context) error {
 	// Get the DB connection from the context
 	tx, ok := c.Value("tx").(*pop.Connection)
 
@@ -402,9 +394,6 @@ func (v ConversationsResource) loadForm(conversation *models.Conversation, quote
 	annotation := models.Annotation{}
 
 	annotation.Note = ""
-	if quote.Annotation != nil {
-		annotation.Note = quote.Annotation.Note
-	}
 
 	// Retrieve all Authors from the DB
 	if err := tx.Order("name").All(&authors); err != nil {
@@ -421,7 +410,7 @@ func (v ConversationsResource) loadForm(conversation *models.Conversation, quote
 	fmt.Println(cvsjson)
 
 	c.Set("conversation", conversation)
-	c.Set("quote", quote)
+	//c.Set("quote", quote)
 	c.Set("authors", authors)
 	c.Set("annotation", annotation)
 	c.Set("option", "save")
