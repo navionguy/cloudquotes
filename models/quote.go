@@ -21,9 +21,9 @@ type Quote struct {
 	Publish   bool      `json:"publish" db:"publish" form:"MakePublic"`
 
 	// Relationships
-	Conversation Conversation `belongs_to:"conversation" db:"-"`
-	Author       Author       `belongs_to:"author" db:"-"`
-	Annotation   *Annotation  `belongs_to:"annotation" db:"-"`
+	Conversation Conversation `json:"-" belongs_to:"conversation" db:"-"`
+	Author       Author       `json:"-" belongs_to:"author" db:"-"`
+	Annotation   *Annotation  `json:"-" belongs_to:"annotation" db:"-"`
 
 	// Foreign keys
 	ConversationID uuid.UUID  `json:"conversation_id" db:"conversation_id"`

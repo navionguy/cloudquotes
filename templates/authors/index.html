@@ -51,7 +51,7 @@
   <h1>Authors</h1>
 </div>
 <ul class="list-unstyled list-inline">
-  <li><a href="<%= newAuthorsPath() %>" class="btn btn-primary"><img src="<%= assetPath("images/AddNew.png") %>"/></a></li>
+  <li><a href="<%= newAuthorsPath() %>" class="btn btn-primary"><img src="<%= assetPath("images/AddItem.png") %>"/></a></li>
 </ul>
 
 <table class="table table-striped">
@@ -62,33 +62,14 @@
   </thead>
   <tbody>
     <%= for (author) in authors { %>
-      <%  
-      if (len(conversation.Quotes) > 0) {
-          let quote = conversation.Quotes[0]
-          let phrase = quote.Phrase
-          let author = quote.Author.Name
-          if (len(conversation.Quotes) > 1) {
-              let elipse = "..."
-          } else {
-              let elipse = " " 
-          }   
-      } else {
-          let phrase = " " 
-          let elipse = " " 
-      }   
-      %>  
 
       <tr>
-      <td width="140px">author.Name</td>
+      <td width="140px"><%= author.Name %></td>
         <td width="500px">
-            <a href="<%= authorsPath() %>/%7B<%= author.ID.String() %>%7D" data-toggle="tooltip" title="View"><%= phrase %></a><br><%= author %>
+            <a href="<%= authorsPath() %>/%7B<%= author.ID.String() %>%7D" data-toggle="tooltip" title="View"></a><br><%= author.Name %>
         </td>
         <td width="300px">
           <div class="pull-right">
-            <%= elipse %>
-            <a href="<%= conversationPath({ conversation_id: conversation.ID }) %>" data-toggle="tooltip" title="View" class="btn btn-info"><img src="<%= assetPath("images/view.png") %>"/></a>
-            <a href="<%= editConversationPath({ conversation_id: conversation.ID }) %>" data-toggle="tooltip" title="Edit" class="btn btn-warning"><img src="<%= assetPath("images/edit.png") %>"/></a>
-            <a href="<%= conversationPath({ conversation_id: conversation.ID }) %>" data-toggle="tooltip" title="Delete" data-method="DELETE" data-confirm="Are you sure?" class="btn btn-danger"><img src="<%= assetPath("images/recycle.png") %>"/></a>
           </div>
         </td>
       </tr>

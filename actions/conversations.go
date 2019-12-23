@@ -1,11 +1,7 @@
 package actions
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"net/url"
-	"strings"
 	"time"
 
 	"github.com/gobuffalo/buffalo"
@@ -98,7 +94,6 @@ func (v ConversationsResource) New(c buffalo.Context) error {
 
 	conversation.OccurredOn = time.Now()
 	conversation.Publish = true
-
 	err := v.loadForm(conversation, c)
 
 	if err != nil {
@@ -133,29 +128,26 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	quote, option, err := bindToForm(c)
+	conv, option, err := v.bindToForm(c)
 	fmt.Printf("bind complete, err %s, option %s/n", err, *option)
 
-	if (err != nil) && 0 == strings.Compare(*option, "save") {
-		return err
+	if err != nil {
+		return errors.WithStack(err)
 	}
-
-	conversation := &models.Conversation{}
-	var verrs *validate.Errors
 
 	switch *option {
 	case "addAuthor":
-		return v.addAuthor(quote, c)
+		return v.addAuthor(conv, c)
 
 	case "save":
-		conversation, quote, verrs, err = v.saveConversation(quote)
+		verrs, err := conv.Create()
 
 		if err != nil {
-			return err
+			return errors.WithStack(err)
 		}
 
 		if verrs.HasAny() {
-			err = v.loadForm(conversation, c)
+			err = v.loadForm(conv, c)
 
 			if err != nil {
 				return errors.WithStack(err)
@@ -168,7 +160,7 @@ func (v ConversationsResource) Create(c buffalo.Context) error {
 		c.Flash().Add("success", "Conversation was created successfully")
 
 		//return c.Redirect(302, fmt.Sprintf("/conversations//%%7B%s%%7D/", conversation.ID.String()))
-		return c.Render(201, r.Auto(c, conversation))
+		return c.Render(201, r.Auto(c, conv))
 	}
 
 	return err
@@ -207,33 +199,33 @@ func (v ConversationsResource) Update(c buffalo.Context) error {
 		return errors.WithStack(err)
 	}
 
-	quote, option, err := bindToForm(c)
+	conv, option, err := v.bindToForm(c)
 
 	if err != nil {
 		return err
 	}
 
-	// Allocate an empty Conversation
-	conversation := &models.Conversation{}
+	// Allocate an empty quote
+	quote := &models.Quote{}
 
-	if err := tx.Find(conversation, c.Param("conversation_id")); err != nil {
+	if err := tx.Find(conv, c.Param("conversation_id")); err != nil {
 		return c.Error(404, err)
 	}
 	var verrs *validate.Errors
 
 	switch *option {
 	case "addAuthor":
-		return v.addAuthor(quote, c)
+		return v.addAuthor(conv, c)
 
 	case "save":
-		conversation, quote, verrs, err = v.saveConversation(quote)
+		conv, quote, verrs, err = v.saveConversation(quote)
 
 		if err != nil {
 			return err
 		}
 
 		if verrs.HasAny() {
-			err = v.loadForm(conversation, c)
+			err = v.loadForm(conv, c)
 
 			if err != nil {
 				return errors.WithStack(err)
@@ -246,7 +238,7 @@ func (v ConversationsResource) Update(c buffalo.Context) error {
 		c.Flash().Add("success", "Conversation was created successfully")
 
 		//return c.Redirect(302, fmt.Sprintf("/conversations//%%7B%s%%7D/", conversation.ID.String()))
-		return c.Render(201, r.Auto(c, conversation))
+		return c.Render(201, r.Auto(c, conv))
 	}
 
 	return err
@@ -318,15 +310,6 @@ func (v ConversationsResource) saveConversation(quote *models.Quote) (*models.Co
 	conversation := &models.Conversation{}
 
 	if quote.Sequence > 0 {
-		// this is the final reply in a conversation
-		// go get the rest of the conversation
-	} else {
-		// conversation is empty, just append the only quote
-
-		conversation.Quotes = append(conversation.Quotes, *quote)
-		conversation.Publish = quote.Publish
-		conversation.OccurredOn = quote.SaidOn
-
 		verrs, err := conversation.Create()
 
 		if err != nil {
@@ -400,62 +383,33 @@ func (v ConversationsResource) loadForm(conversation *models.Conversation, c buf
 		return errors.WithStack(err)
 	}
 
-	cvjson, err := json.Marshal(conversation)
+	cvjson, err := conversation.MarshalConversation()
 
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	cvsjson := string(cvjson)
-	fmt.Println(cvsjson)
-
 	c.Set("conversation", conversation)
-	//c.Set("quote", quote)
 	c.Set("authors", authors)
-	c.Set("annotation", annotation)
-	c.Set("option", "save")
-	c.Set("cvjson", cvsjson)
+	c.Set("cvj", cvjson)
 
 	return nil
 }
 
-// build a quote from the standard conversation form
-func bindToForm(c buffalo.Context) (*models.Quote, *string, error) {
-	quote := &models.Quote{}
-	annotation := &models.Annotation{}
-	var err error
+// build a conversation from the standard conversation form
+func (v ConversationsResource) bindToForm(c buffalo.Context) (*models.Conversation, *string, error) {
+	conv := &models.Conversation{}
 
-	// Bind quote to the html form elements
-	if err = c.Bind(quote); err != nil {
-		return nil, nil, errors.WithStack(err)
-	}
+	cvjson := c.Request().Form.Get("cvjson")
+	err := conv.UnmarshalConversation(cvjson)
 
-	// Bind annotation to the html form elements
-	if err = c.Bind(annotation); err != nil {
+	if err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 
 	option := c.Request().Form.Get("option")
 
-	quote.Author.ID = quote.AuthorID
-
-	// go find the Author record
-
-	err = quote.Author.FindByID()
-
-	if err != nil {
-		return quote, &option, errors.WithStack(err)
-	}
-
-	// get out the annotation value
-
-	err = attachAnnotation(quote, annotation)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return quote, &option, nil
+	return conv, &option, nil
 }
 
 // if there is an annotation, add it to the quote
@@ -489,92 +443,17 @@ func attachAnnotation(quote *models.Quote, annotation *models.Annotation) error 
 }
 
 // User wants to add an author to the database.  Save where we are and go do that.
-func (v ConversationsResource) addAuthor(quote *models.Quote, c buffalo.Context) error {
-	s := c.Session()
-
-	cv := s.Get(&models.Conversation{}) // <-- this is CRAP!
-
-	if cv == nil {
-		cv := &models.Conversation{}
-		cv.Quotes = append(cv.Quotes, *quote)
-
-		err := savePartialConversation(cv, c.Session())
-
-		bcv, err := json.Marshal(cv)
-
-		if err != nil {
-			return nil
-		}
-
-		var ccv bytes.Buffer
-		err = json.Compact(&ccv, bcv)
-
-		uscv := url.QueryEscape(ccv.String())
-
-		s.Set("conversation", uscv)
-	}
-	s.Set("test", "this is a test")
-	s.Save()
-
+func (v ConversationsResource) addAuthor(conv *models.Conversation, c buffalo.Context) error {
 	author := &models.Author{}
 
+	cvjson, err := conv.MarshalConversation()
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
 	c.Set("author", author)
-	c.Set("gotoPage", "new")
+	c.Set("cvj", cvjson)
 
 	return c.Render(200, r.HTML("authors/new"))
-}
-
-// take however much conversation I have, and squirrel it away in the session object
-func savePartialConversation(conv *models.Conversation, session *buffalo.Session) error {
-	convJSON, err := json.Marshal(conv) // convert it to a string of JSON
-
-	if err != nil {
-		return err
-	}
-
-	var convComp bytes.Buffer
-	err = json.Compact(&convComp, convJSON) // take out all unnecessary white space
-
-	if err != nil {
-		return err
-	}
-
-	convEscaped := url.QueryEscape(convComp.String()) // make it save to encode in a URL
-
-	session.Set("conversation", convEscaped) // and save it away
-
-	return nil
-}
-
-// loadPartialConversation reaches into the current session object and tries to find
-// the saved conversation,
-func loadPartialConversation(session *buffalo.Session) (*models.Conversation, error) {
-	// see if there is a conversation stored as a string of JSON
-	convJSON := session.Get("conversation")
-	escpdConv, ok := convJSON.(string) //convert it to a string of URL Escape'd JSON
-
-	// go ahead and create an empty conversation
-
-	conv := &models.Conversation{}
-
-	// if I didn't find a conversation, return the empty one
-
-	if !ok {
-		return conv, nil
-	}
-
-	// found one, turn it back into a conversation
-	convStr, err := url.QueryUnescape(escpdConv)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal([]byte(convStr), conv)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return conv, nil
 }

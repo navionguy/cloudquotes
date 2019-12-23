@@ -1,9 +1,7 @@
 package actions
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/url"
 
 	"github.com/gobuffalo/buffalo"
 	"github.com/gobuffalo/pop"
@@ -23,13 +21,21 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 	if !ok {
 		return errors.WithStack(errors.New("no transaction found"))
 	}
+	fmt.Println("List Authors")
 
 	authors := &models.Authors{}
 
 	// Paginate results. Params "page" and "per_page" control pagination.
 	// Default values are "page=1" and "per_page=20".
 
-	q := tx.Eager("Authors").PaginateFromParams(c.Params()).Order("name")
+	// Get all the authors names and their quote count
+	// SELECT authors.name, COUNT(DISTINCT quotes.id) FROM authors LEFT JOIN quotes ON quotes.author_id = authors.id GROUP BY authors.id ORDER BY authors.name;
+	//models.DB.Q().LeftJoin("authors", "authors.id").LeftJoin("quotes", "quotes.author_id").
+	//Where("quotes.author_id = authors.id").PaginateFromParams()
+	q := tx.PaginateFromParams(c.Params()).Order("name")
+	//tx.Select("authors.name", "COUNT(DISTINCT quotes.id)")
+	//models.DB.LeftJoin("roles", "roles.id=user_roles.role_id").LeftJoin("users u", "u.id=user_roles.user_id").
+	//Where(`roles.name like ?`, name).Paginate(page, perpage)
 
 	// Retrieve all Authors from the DB
 	if err := q.All(authors); err != nil {
@@ -42,11 +48,20 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 	return c.Render(200, r.Auto(c, authors))
 }
 
+// New author about to be entered
+func (v AuthorsResource) New(c buffalo.Context) error {
+	fmt.Println("Author->New")
+
+	spkr := &models.Author{}
+
+	c.Set("author", spkr)
+	c.Set("cvj", "")
+
+	return c.Render(200, r.HTML("authors/new.html"))
+}
+
 // Create default implementation.
 func (v AuthorsResource) Create(c buffalo.Context) error {
-	s := c.Session()
-
-	cv, ok := v.unMarshalConversation(s)
 
 	speaker := &models.Author{}
 
@@ -82,59 +97,44 @@ func (v AuthorsResource) Create(c buffalo.Context) error {
 		c.Flash().Add("success", "Speaker created successfully!")
 	}
 
-	// put the conversation back into the form
-	quote := models.Quote{}
-	authors := []models.Author{}
-	annotation := models.Annotation{}
+	cvjson := c.Request().Form.Get("cvjson")
 
-	annotation.Note = ""
+	fmt.Printf("json length %d, %s\n", len(cvjson), cvjson)
 
-	if quote.Annotation != nil {
-		annotation.Note = quote.Annotation.Note
+	if len(cvjson) == 0 {
+		return c.Redirect(201, "authors")
 	}
+
+	// put the conversation back into the form
+	conv := models.Conversation{}
+	err := conv.UnmarshalConversation(cvjson)
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	authors := []models.Author{}
 
 	// Retrieve all Authors from the DB
 	if err := tx.Order("name").All(&authors); err != nil {
 		return errors.WithStack(err)
 	}
 
-	quote = cv.Quotes[0]
-
-	if quote.Annotation != nil {
-		annotation.Note = quote.Annotation.Note
-	}
-
-	c.Set("conversation", cv)
-	c.Set("quote", quote)
+	c.Set("conversation", conv)
 	c.Set("authors", authors)
-	c.Set("annotation", annotation)
-	c.Set("option", "save")
-	//c.Set("cvjson", scv)
+	c.Set("cvj", cvjson)
 
 	return c.Render(200, r.HTML("conversations/new"))
 }
 
-func (v AuthorsResource) unMarshalConversation(s *buffalo.Session) (*models.Conversation, bool) {
-	cvv := s.Get("conversation")
-	cvesc, ok := cvv.(string)
-
-	// if no conversations in the session, can't unMarshal it
-	if !ok {
-		return nil, false
-	}
-
-	cvs, err := url.QueryUnescape(cvesc)
+func (v AuthorsResource) unMarshalConversation(c buffalo.Context) (*models.Conversation, bool) {
+	cvv := c.Request().Form.Get("cvjson")
+	conv := &models.Conversation{}
+	err := conv.UnmarshalConversation(cvv)
 
 	if err != nil {
 		return nil, false
 	}
 
-	cv := &models.Conversation{}
-	err = json.Unmarshal([]byte(cvs), cv)
-
-	if err != nil {
-		return nil, false
-	}
-
-	return cv, true
+	return conv, true
 }

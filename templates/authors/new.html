@@ -13,6 +13,7 @@
     <%= form_for(author, {action: authorsPath(), method: "POST"}) { %>
 
         <table width="100%">
+            <%= f.HiddenTag("cvjson", {value: cvj}) %>
             <p id="demo"></p>
             <col width="25%">
             <col width="45%">

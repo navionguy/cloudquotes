@@ -3,6 +3,8 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -21,7 +23,7 @@ type Conversation struct {
 	Publish    bool      `json:"publish" db:"publish"`
 
 	// Relationships
-	Quotes Quotes `has_many:"quote" orderby:"sequence" db:"-"`
+	Quotes Quotes `has_many:"quotes" orderby:"sequence" db:"-"`
 }
 
 // String is not required by pop and may be deleted
@@ -164,4 +166,56 @@ func (c *Conversation) Update() (*validate.Errors, error) {
 
 	// if nothing went south, all is good
 	return verrs, nil
+}
+
+// MarshalConversation the passed conversation
+// I convert it to JSON and Set into the form context
+func (c *Conversation) MarshalConversation() (string, error) {
+
+	cvjson, err := json.Marshal(c)
+
+	if err != nil {
+		return "", err
+	}
+
+	cvsjson := string(cvjson)
+	fmt.Println(cvsjson)
+	fmt.Println("starting")
+
+	//var ccv bytes.Buffer
+	//err = json.Compact(&ccv, cvjson)
+
+	uscv := url.PathEscape(string(cvjson))
+	fmt.Println(uscv)
+
+	return uscv, nil
+}
+
+// UnmarshalConversation  pull quote out of the form
+func (c *Conversation) UnmarshalConversation(cvjson string) error {
+	fmt.Println("raw")
+	fmt.Println(cvjson)
+	fmt.Println("data")
+
+	ccv, err := url.PathUnescape(cvjson)
+
+	if err != nil {
+		return err
+	}
+
+	ccv2, _ := url.QueryUnescape(cvjson)
+
+	fmt.Println("results")
+	fmt.Println(ccv)
+	fmt.Printf("alternate\n%s\n", ccv2)
+	err = json.Unmarshal([]byte(ccv), c)
+	if err != nil {
+		fmt.Printf("json unmarshall error %s/n", err.Error())
+		return err
+	}
+	fmt.Println(c)
+	fmt.Println(len(c.Quotes))
+	fmt.Println("final")
+
+	return nil
 }
