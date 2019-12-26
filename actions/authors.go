@@ -33,9 +33,25 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 	//models.DB.Q().LeftJoin("authors", "authors.id").LeftJoin("quotes", "quotes.author_id").
 	//Where("quotes.author_id = authors.id").PaginateFromParams()
 	q := tx.PaginateFromParams(c.Params()).Order("name")
+	tq := tx.PaginateFromParams(c.Params()).Order("name")
+	cq := tq.RawQuery("SELECT authors.id, authors.name, COUNT(DISTINCT quotes.id) FROM authors LEFT JOIN quotes ON quotes.author_id = authors.id GROUP BY authors.id ORDER BY authors.name")
+	// SELECT authors.name, COUNT(DISTINCT quotes.id) FROM authors LEFT JOIN quotes ON quotes.author_id = authors.id GROUP BY authors.id ORDER BY authors.name;
+	//models.DB.Q().LeftJoin("authors", "authors.id").LeftJoin("quotes", "quotes.author_id").
+	//Where("quotes.author_id = authors.id").PaginateFromParams()
 	//tx.Select("authors.name", "COUNT(DISTINCT quotes.id)")
 	//models.DB.LeftJoin("roles", "roles.id=user_roles.role_id").LeftJoin("users u", "u.id=user_roles.user_id").
 	//Where(`roles.name like ?`, name).Paginate(page, perpage)
+
+	authorCredits := &models.AuthorCredits{}
+
+	if err := cq.All(authorCredits); err != nil {
+		fmt.Println("Couldn't get credits")
+		fmt.Println(err.Error())
+		return errors.WithStack(err)
+	} else {
+		ac := *authorCredits
+		fmt.Printf("%s %s has %d\n", ac[0].ID, ac[0].Name, ac[0].Count)
+	}
 
 	// Retrieve all Authors from the DB
 	if err := q.All(authors); err != nil {
@@ -43,9 +59,9 @@ func (v AuthorsResource) List(c buffalo.Context) error {
 	}
 
 	// Add the paginator to the context so it can be used in the template.
-	c.Set("pagination", q.Paginator)
+	c.Set("pagination", tq.Paginator)
 
-	return c.Render(200, r.Auto(c, authors))
+	return c.Render(200, r.Auto(c, authorCredits))
 }
 
 // New author about to be entered

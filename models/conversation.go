@@ -169,7 +169,7 @@ func (c *Conversation) Update() (*validate.Errors, error) {
 }
 
 // MarshalConversation the passed conversation
-// I convert it to JSON and Set into the form context
+// I convert it to JSON
 func (c *Conversation) MarshalConversation() (string, error) {
 
 	cvjson, err := json.Marshal(c)
@@ -178,44 +178,23 @@ func (c *Conversation) MarshalConversation() (string, error) {
 		return "", err
 	}
 
-	cvsjson := string(cvjson)
-	fmt.Println(cvsjson)
-	fmt.Println("starting")
-
-	//var ccv bytes.Buffer
-	//err = json.Compact(&ccv, cvjson)
-
-	uscv := url.PathEscape(string(cvjson))
-	fmt.Println(uscv)
-
-	return uscv, nil
+	return url.PathEscape(string(cvjson)), nil
 }
 
-// UnmarshalConversation  pull quote out of the form
+// UnmarshalConversation convert json back into quote
 func (c *Conversation) UnmarshalConversation(cvjson string) error {
-	fmt.Println("raw")
-	fmt.Println(cvjson)
-	fmt.Println("data")
-
 	ccv, err := url.PathUnescape(cvjson)
 
 	if err != nil {
 		return err
 	}
 
-	ccv2, _ := url.QueryUnescape(cvjson)
-
-	fmt.Println("results")
-	fmt.Println(ccv)
-	fmt.Printf("alternate\n%s\n", ccv2)
 	err = json.Unmarshal([]byte(ccv), c)
+
 	if err != nil {
 		fmt.Printf("json unmarshall error %s/n", err.Error())
 		return err
 	}
-	fmt.Println(c)
-	fmt.Println(len(c.Quotes))
-	fmt.Println("final")
 
 	return nil
 }

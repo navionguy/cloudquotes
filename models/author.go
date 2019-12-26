@@ -21,6 +21,16 @@ type Author struct {
 	Name      string    `json:"name" db:"name" form:"name"`
 }
 
+// AuthorCredit allows me to find out how many quotes each author has
+type AuthorCredit struct {
+	ID    uuid.UUID `json:"id" db:"id"`
+	Name  string    `json:"name" db:"name"`
+	Count int       `json:"count" db:"count"`
+}
+
+// AuthorCredits holds all the authors
+type AuthorCredits []AuthorCredit
+
 // String is not required by pop and may be deleted
 func (a Author) String() string {
 	ja, _ := json.Marshal(a)

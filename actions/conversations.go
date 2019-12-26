@@ -309,16 +309,14 @@ func (v ConversationsResource) saveConversation(quote *models.Quote) (*models.Co
 
 	conversation := &models.Conversation{}
 
-	if quote.Sequence > 0 {
-		verrs, err := conversation.Create()
+	verrs, err := conversation.Create()
 
-		if err != nil {
-			return nil, nil, nil, errors.WithStack(err)
-		}
+	if err != nil {
+		return nil, nil, nil, errors.WithStack(err)
+	}
 
-		if verrs.HasAny() {
-			return nil, quote, verrs, nil
-		}
+	if verrs.HasAny() {
+		return nil, quote, verrs, nil
 	}
 
 	return conversation, nil, nil, nil

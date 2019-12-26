@@ -22,8 +22,8 @@ type Quote struct {
 
 	// Relationships
 	Conversation Conversation `json:"-" belongs_to:"conversation" db:"-"`
-	Author       Author       `json:"-" belongs_to:"author" db:"-"`
-	Annotation   *Annotation  `json:"-" belongs_to:"annotation" db:"-"`
+	Author       Author       `belongs_to:"author" db:"-"`
+	Annotation   *Annotation  `belongs_to:"annotation" db:"-"`
 
 	// Foreign keys
 	ConversationID uuid.UUID  `json:"conversation_id" db:"conversation_id"`

@@ -61,16 +61,14 @@
     <th>&nbsp;</th>
   </thead>
   <tbody>
-    <%= for (author) in authors { %>
+    <%= for (authorcredit) in authorCredits { %>
 
       <tr>
-      <td width="140px"><%= author.Name %></td>
-        <td width="500px">
-            <a href="<%= authorsPath() %>/%7B<%= author.ID.String() %>%7D" data-toggle="tooltip" title="View"></a><br><%= author.Count %>
+      <td width="500px"><a href="<%= authorsPath() %>/%7B<%= authorcredit.ID.String() %>%7D" data-toggle="tooltip" title="View">
+            <%= authorcredit.Name %></a>
         </td>
-        <td width="300px">
-          <div class="pull-right">
-          </div>
+        <td width="100px">
+            </a><%= authorcredit.Count %>
         </td>
       </tr>
     <% } %>
