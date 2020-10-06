@@ -1,9 +1,8 @@
----
 development:
   dialect: postgres
   database: cloudquotes_development
-  user: postgres
-  password: postgres
+  user: cloudquotes
+  password: 53cureQu073$
   host: 127.0.0.1
   pool: 5
 

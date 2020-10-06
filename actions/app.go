@@ -2,12 +2,12 @@ package actions
 
 import (
 	"github.com/gobuffalo/buffalo"
+	"github.com/gobuffalo/buffalo-pop/v2/pop/popmw"
 	"github.com/gobuffalo/envy"
 	forcessl "github.com/gobuffalo/mw-forcessl"
 	paramlogger "github.com/gobuffalo/mw-paramlogger"
 	"github.com/unrolled/secure"
 
-	"github.com/gobuffalo/buffalo-pop/pop/popmw"
 	csrf "github.com/gobuffalo/mw-csrf"
 	i18n "github.com/gobuffalo/mw-i18n"
 	"github.com/gobuffalo/packr/v2"
@@ -59,7 +59,12 @@ func App() *buffalo.App {
 		app.Use(translations())
 
 		app.GET("/", HomeHandler)
-
+		//app.Use(SetCurrentUser)
+		//app.Use(Authorize)
+		cv := &ConversationsResource{}
+		app.GET("/conversations/export/", cv.Export) // this is becoming useless and should probably go away
+		app.Resource("/conversations", cv)
+		app.Resource("/authors", &AuthorsResource{})
 		app.ServeFiles("/", assetsBox) // serve files from the public directory
 	}
 
