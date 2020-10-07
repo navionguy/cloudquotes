@@ -24,4 +24,5 @@ jhw.*
 dist/
 generated/
 .vendor/
-
+res.o
+work.sql
